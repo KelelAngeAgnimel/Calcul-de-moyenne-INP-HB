@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calcul de moyenne de dossier — Concours INP-HB 2026</title>
+<style>
+  :root{
+    --ink:#1b2a1e;
+    --paper:#f7f6f1;
+    --card:#ffffff;
+    --green:#0e6b3a;
+    --green-dark:#0a4f2b;
+    --orange:#e8891d;
+    --line:#dcd9cf;
+    --muted:#6b7268;
+    --bad:#b3341f;
+    --ok:#0e6b3a;
+    --radius:14px;
+    font-size:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100vh;padding-bottom:60px;
+  }
+  header{
+    background:linear-gradient(135deg,var(--green-dark),var(--green));
+    color:#fff;padding:28px 20px 34px;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:0 4px}
+  header .tag{
+    display:inline-block;background:var(--orange);color:#fff;
+    font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    padding:4px 10px;border-radius:20px;margin-bottom:12px;
+  }
+  header h1{font-size:1.55rem;line-height:1.25;font-weight:800}
+  header p{margin-top:8px;opacity:.9;font-size:.95rem;max-width:560px}
+  main{max-width:760px;margin:-18px auto 0;padding:0 16px}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px 20px;margin-bottom:18px;box-shadow:0 2px 10px rgba(27,42,30,.05);
+  }
+  .card h2{
+    font-size:1.02rem;font-weight:700;margin-bottom:14px;color:var(--green-dark);
+    display:flex;align-items:center;gap:10px;
+  }
+  .step{
+    background:var(--green);color:#fff;font-size:.75rem;font-weight:700;
+    width:24px;height:24px;border-radius:50%;display:inline-flex;
+    align-items:center;justify-content:center;flex:none;
+  }
+  .dates{
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:.82rem;
+  }
+  .dates div{background:#eef5ef;border:1px solid #cfe2d3;border-radius:10px;padding:10px 12px}
+  .dates b{display:block;color:var(--green-dark);font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
+  label{display:block;font-size:.85rem;font-weight:600;margin-bottom:5px}
+  input,select{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;
+    font-size:1rem;background:#fff;color:var(--ink);
+  }
+  input:focus,select:focus{outline:2px solid var(--green);outline-offset:1px;border-color:var(--green)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .field{margin-bottom:12px}
+  .hint{font-size:.78rem;color:var(--muted);margin-top:4px}
+  .notes-table{width:100%;border-collapse:collapse;font-size:.9rem}
+  .notes-table th{
+    text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--muted);padding:6px 4px;border-bottom:2px solid var(--line);
+  }
+  .notes-table td{padding:6px 4px;border-bottom:1px solid var(--line)}
+  .notes-table td:first-child{font-weight:600;font-size:.85rem;min-width:88px}
+  .notes-table input{padding:8px;font-size:.95rem;text-align:center}
+  .notes-table input.err{border-color:var(--bad);background:#fdf1ee}
+  .res-group{margin-bottom:16px}
+  .res-group h3{
+    font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);
+    margin-bottom:8px;border-bottom:1px solid var(--line);padding-bottom:5px;
+  }
+  .res-item{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:12px 14px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;
+  }
+  .res-item .name{font-weight:600;font-size:.92rem}
+  .res-item .sub{font-size:.74rem;color:var(--muted);margin-top:2px}
+  .res-item .score{
+    font-size:1.25rem;font-weight:800;color:var(--green-dark);
+    font-variant-numeric:tabular-nums;flex:none;
+  }
+  .res-item.best{border-color:var(--orange);background:#fff8ef}
+  .res-item.best .score{color:var(--orange)}
+  .badge-best{
+    font-size:.68rem;font-weight:700;color:var(--orange);text-transform:uppercase;
+    letter-spacing:.08em;
+  }
+  .approx{color:var(--orange);font-weight:700;cursor:help}
+  .mgm-line{font-size:.85rem;color:var(--muted);padding:4px 2px}
+  .mgm-line b{color:var(--ink)}
+  button{
+    width:100%;padding:14px;border:none;border-radius:10px;cursor:pointer;
+    font-size:1.05rem;font-weight:700;background:var(--green);color:#fff;
+    transition:background .15s;
+  }
+  button:hover{background:var(--green-dark)}
+  .consent{display:flex;gap:10px;align-items:flex-start;font-size:.83rem;color:var(--muted);margin:14px 0}
+  .consent input{width:auto;margin-top:3px}
+  .msg{font-size:.85rem;margin-top:10px;text-align:center}
+  .msg.ok{color:var(--ok)} .msg.bad{color:var(--bad)}
+  .note-info{
+    background:#eef5ef;border:1px solid #cfe2d3;border-radius:10px;
+    padding:12px 14px;font-size:.83rem;color:var(--green-dark);margin-bottom:14px;
+  }
+  .note-warn{
+    background:#fff8ef;border:1px solid #f2d9b3;border-radius:10px;
+    padding:10px 14px;font-size:.79rem;color:#8a5a12;margin-top:12px;
+  }
+  footer{max-width:760px;margin:24px auto 0;padding:0 16px;font-size:.75rem;color:var(--muted);text-align:center}
+  #results{display:none}
+  @media(max-width:520px){
+    .grid2,.dates{grid-template-columns:1fr}
+    header h1{font-size:1.3rem}
+    .notes-table td:first-child{min-width:70px;font-size:.78rem}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="tag">Concours INP-HB — BAC/BT Session 2026</span>
+    <h1>Calcule ta moyenne de dossier</h1>
+    <p>Entre tes moyennes de 2nde, 1ère, Terminale et tes notes du Bac : l'application calcule ta moyenne de dossier pour chaque filière ouverte à ta série (cycles courts DTS et classes préparatoires).</p>
+  </div>
+</header>
+
+<main>
+  <!-- Dates officielles -->
+  <div class="card">
+    <h2><span class="step">i</span>Dates officielles 2026</h2>
+    <div class="dates">
+      <div><b>Préinscription en ligne</b>Du jeudi 02 juillet au mercredi 22 juillet 2026</div>
+      <div><b>Dépôt des dossiers</b>Du jeudi 9 juillet au samedi 25 juillet 2026</div>
+      <div><b>Âge limite</b>24 ans au plus (cycles courts) · 22 ans au plus (prépas) au 31/12/2026</div>
+      <div><b>Frais de concours</b>19 000 FCFA (1 concours) · 34 000 FCFA (2 concours), payable sur TresorPay</div>
+    </div>
+  </div>
+
+  <form id="mainForm" autocomplete="off">
+  <!-- Étape 1 : identité -->
+  <div class="card">
+    <h2><span class="step">1</span>Tes informations</h2>
+    <div class="grid2">
+      <div class="field"><label for="nom">Nom</label><input id="nom" required maxlength="60"></div>
+      <div class="field"><label for="prenom">Prénom(s)</label><input id="prenom" required maxlength="80"></div>
+    </div>
+    <div class="field"><label for="ecole">École / Lycée d'origine</label><input id="ecole" required maxlength="120" placeholder="Ex : Lycée Classique d'Abidjan"></div>
+    <div class="field">
+      <label for="serie">Série du Bac / BT</label>
+      <select id="serie" required>
+        <option value="" disabled selected>Choisis ta série…</option>
+        <optgroup label="Séries générales">
+          <option value="A1">A1</option>
+          <option value="A2">A2</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+          <option value="E">E</option>
+        </optgroup>
+        <optgroup label="Séries techniques">
+          <option value="F1">F1</option>
+          <option value="F2">F2</option>
+          <option value="F3">F3</option>
+          <option value="F4">F4</option>
+          <option value="F7">F7</option>
+          <option value="G2">G2</option>
+        </optgroup>
+        <optgroup label="Brevets de Technicien (BT)">
+          <option value="BTCOMPTA">BT Comptabilité</option>
+          <option value="BTSTIC">BT STIC</option>
+          <option value="BTSTGI">BT STGI</option>
+          <option value="BTGC">BT Génie Civil</option>
+          <option value="BTMP">BT Mines / Pétrole</option>
+          <option value="BTCGP">BT Chimie / Génie des Procédés</option>
+          <option value="BTAGRO">BT Agro-Industrie</option>
+        </optgroup>
+      </select>
+      <div class="hint" id="serieHint"></div>
+    </div>
+  </div>
+
+  <!-- Étape 2 : notes -->
+  <div class="card" id="notesCard" style="display:none">
+    <h2><span class="step">2</span>Tes moyennes et notes du Bac <span style="font-weight:400;color:var(--muted);font-size:.8rem">(sur 20)</span></h2>
+    <div class="note-info">
+      Pour chaque matière : <b>moyenne du cycle</b> = (2 × 2nde + 3 × 1ère + 5 × Tle) ÷ 10, puis
+      <b>moyenne générale matière</b> = (moyenne du cycle + 3 × note Bac) ÷ 4.
+    </div>
+    <table class="notes-table">
+      <thead><tr><th>Matière</th><th>2nde</th><th>1ère</th><th>Tle</th><th>Bac</th></tr></thead>
+      <tbody id="notesBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Étape 3 : consentement + calcul -->
+  <div class="card" id="submitCard" style="display:none">
+    <h2><span class="step">3</span>Calcul</h2>
+    <div class="consent">
+      <input type="checkbox" id="consent" required>
+      <label for="consent" style="font-weight:400">
+        J'accepte que mon nom, prénom, école, série et mes résultats soient enregistrés de manière
+        sécurisée à des fins de statistiques et d'études sur l'orientation des bacheliers.
+      </label>
+    </div>
+    <button type="submit" id="btnCalc">Calculer mes moyennes de dossier</button>
+    <div class="msg" id="msg"></div>
+  </div>
+  </form>
+
+  <!-- Résultats -->
+  <div class="card" id="results">
+    <h2><span class="step">✓</span>Tes moyennes de dossier</h2>
+    <div id="mgmSummary" style="margin-bottom:14px"></div>
+    <div id="resList"></div>
+    <p class="hint" style="margin-top:12px">
+      Plus ta moyenne de dossier est élevée dans une filière, plus tes chances d'y être retenu(e) sont grandes.
+      Le concours comporte une phase d'admissibilité (étude de dossier) puis une phase d'admission (épreuves écrites).
+    </p>
+    <div class="note-warn" id="approxWarn" style="display:none">
+      * Filière récente ou modifiée en 2026 : coefficients estimés à partir des filières équivalentes,
+      en attente des coefficients officiels.
+    </div>
+  </div>
+</main>
+
+<footer>
+  Outil d'aide à l'orientation — non affilié officiellement à l'INP-HB. Les résultats sont indicatifs.<br>
+  Renseignements officiels : www.inphb.ci · concours@inphb.ci
+</footer>
+
+<script>
+/* ============================================================
+   CONFIGURATION — remplace l'URL ci-dessous par celle de ton
+   déploiement Google Apps Script (voir GUIDE_DEPLOIEMENT.md)
+   ============================================================ */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzAkFIotagJvpW7krYbf9iLOek2fFcvjg_MwJ-nA6Pdf93MrhfxZmaZ3_SPaWS1NNxq/exec";
+
+/* ---------- Matières ---------- */
+const SUBJECTS = {
+  math:  "Mathématiques",
+  phys:  "Physique",
+  fr:    "Français",
+  ang:   "Anglais",
+  svt:   "SVT",
+  mt:    "Maths techniques (MT)",
+  sceco: "Sciences Éco"
+};
+
+/* Matières demandées selon la série */
+const SERIE_SUBJECTS = {
+  A1:["math","fr","ang"], A2:["math","fr","ang"],
+  B:["math","fr","ang","sceco"],
+  C:["math","phys","fr","ang","svt"], D:["math","phys","fr","ang","svt"],
+  E:["math","phys","fr","ang","mt"],
+  F1:["math","phys","fr","ang","mt"], F2:["math","phys","fr","ang","mt"],
+  F3:["math","phys","fr","ang","mt"], F4:["math","phys","fr","ang","mt"],
+  F7:["math","phys","fr","ang","mt"],
+  G2:["math","fr","ang","mt"],
+  BTCOMPTA:["math","fr","ang","mt"],
+  BTSTIC:["math","phys","fr","ang","mt"], BTSTGI:["math","phys","fr","ang","mt"],
+  BTGC:["math","phys","fr","ang","mt"], BTMP:["math","phys","fr","ang","mt"],
+  BTCGP:["math","phys","fr","ang","mt"], BTAGRO:["math","phys","fr","ang","mt"]
+};
+
+/* ---------- Jeux de coefficients (appliqués aux MGM) ----------
+   Issus du fichier Excel de référence. Modifie ici si les
+   coefficients officiels 2026 diffèrent. */
+const W = {
+  GAE:      {fr:2,ang:2,math:3},                    // /7
+  GAE_B:    {fr:2,ang:2,math:3,sceco:3},            // /10
+  FCA_TECH: {fr:2,ang:2,math:3,mt:3},               // /10 (G2, BT compta)
+  DTS:      {fr:1,ang:1,math:2,phys:2},             // /6  (C, D)
+  DTS_MT:   {fr:1,ang:1,math:2,phys:2,mt:3},        // /9  (E, F, BT)
+  TSA:      {fr:1,ang:1,math:2,phys:2,svt:2},       // /8  (C, D)
+  PREPA_SCI:{fr:1,ang:1,math:4,phys:4},             // /10 (MPSI/PCSI C, D)
+  PREPA_MT: {fr:1,ang:1,math:4,phys:4,mt:2},        // /12 (MPSI/PCSI E)
+  BCPST:    {fr:1,ang:1,math:3,phys:3,svt:3},       // /11
+  ECG:      {fr:3,ang:3,math:5},                    // /11
+  ECG_B:    {fr:3,ang:3,math:5,sceco:5}             // /16
+};
+
+/* ---------- Filières du concours 2026 (affiche officielle) ----------
+   series : { SERIE : [jeu de coefficients, approx?] }
+   approx = true → coefficients estimés, à confirmer officiellement. */
+const FILIERES = [
+  /* ======== CYCLES COURTS (D.T.S. grade Licence) ======== */
+  {name:"GAE — Gestion et Administration des Entreprises", ecole:"ESCAE", cycle:"court",
+   voies:"GMC, GRH, GSC",
+   series:{A1:[W.GAE], A2:[W.GAE], B:[W.GAE_B], C:[W.GAE], D:[W.GAE]}},
+
+  {name:"FCA — Finance, Comptabilité et Assurance", ecole:"ESCAE", cycle:"court",
+   voies:"CCA, BFA",
+   series:{B:[W.GAE_B], C:[W.GAE], D:[W.GAE], G2:[W.FCA_TECH], BTCOMPTA:[W.FCA_TECH]}},
+
+  {name:"STIC — Sciences et Technologies de l'Information et de la Communication", ecole:"ESI", cycle:"court",
+   voies:"EIT, INFO",
+   series:{C:[W.DTS], D:[W.DTS], F2:[W.DTS_MT,true], BTSTIC:[W.DTS_MT,true]}},
+
+  {name:"STGI — Sciences et Technologies du Génie Industriel", ecole:"ESI", cycle:"court",
+   voies:"EAI, PMSI, MA, MBM",
+   series:{C:[W.DTS], D:[W.DTS], E:[W.DTS_MT], F1:[W.DTS_MT], F3:[W.DTS_MT], BTSTGI:[W.DTS_MT,true]}},
+
+  {name:"GC — Génie Civil", ecole:"ESTP", cycle:"court",
+   voies:"GCTP, GCGT",
+   series:{C:[W.DTS], D:[W.DTS], E:[W.DTS_MT], F4:[W.DTS_MT], BTGC:[W.DTS_MT,true]}},
+
+  {name:"MG — Mines et Géologie", ecole:"ESMG", cycle:"court",
+   voies:"MINES, EEM",
+   series:{C:[W.DTS], D:[W.DTS], E:[W.DTS_MT], BTMP:[W.DTS_MT,true]}},
+
+  {name:"PME — Pétrole et Maintenance des Équipements", ecole:"ESCPE", cycle:"court",
+   voies:"PME",
+   series:{C:[W.DTS], D:[W.DTS], E:[W.DTS_MT], BTMP:[W.DTS_MT,true]}},
+
+  {name:"CGP — Chimie et Génie des Procédés", ecole:"ESCPE", cycle:"court",
+   voies:"CI (Chimie Industrielle)",
+   series:{C:[W.DTS], D:[W.DTS], BTCGP:[W.DTS_MT,true]}},
+
+  {name:"TSAERO — Techniciens Supérieurs en Aéronautique", ecole:"ESAS", cycle:"court",
+   voies:"TSAERO",
+   series:{C:[W.DTS], D:[W.DTS], E:[W.DTS_MT], F1:[W.DTS_MT], F2:[W.DTS_MT], F3:[W.DTS_MT]}},
+
+  {name:"TSA — Techniciens Supérieurs en Agronomie", ecole:"ESA", cycle:"court",
+   voies:"AGF, TA, AABB, IGE, CP, FT, CM, GOPA…",
+   series:{C:[W.TSA], D:[W.TSA], F7:[W.DTS_MT,true], BTAGRO:[W.DTS_MT,true]}},
+
+  /* ======== CLASSES PRÉPARATOIRES (EPGE) ======== */
+  {name:"BCPST — Biologie, Chimie, Physique et Sciences de la Terre", ecole:"EPGE", cycle:"long",
+   voies:"BCPST",
+   series:{C:[W.BCPST], D:[W.BCPST]}},
+
+  {name:"ECG — Économique et Commerciale Générale", ecole:"EPGE", cycle:"long",
+   voies:"ECG",
+   series:{A1:[W.ECG], B:[W.ECG_B], C:[W.ECG], D:[W.ECG]}},
+
+  {name:"PCSI — Physique, Chimie et Sciences de l'Ingénieur", ecole:"EPGE", cycle:"long",
+   voies:"PSI, PC",
+   series:{C:[W.PREPA_SCI], D:[W.PREPA_SCI], E:[W.PREPA_MT]}},
+
+  {name:"MPSI — Mathématiques, Physique et Sciences de l'Ingénieur", ecole:"EPGE", cycle:"long",
+   voies:"MP",
+   series:{C:[W.PREPA_SCI], E:[W.PREPA_MT]}},
+
+  {name:"MP2I — Mathématiques, Physique, Ingénierie et Informatique", ecole:"EPGE", cycle:"long",
+   voies:"MPI, MP",
+   series:{C:[W.PREPA_SCI,true], E:[W.PREPA_MT,true]}},
+
+  {name:"N2SA — Numérique et Sciences Sociales Appliquées", ecole:"EPGE", cycle:"long",
+   voies:"N2SA",
+   series:{A1:[W.GAE,true], A2:[W.GAE,true], C:[W.GAE,true], D:[W.GAE,true]}}
+];
+
+/* ---------- Calculs ---------- */
+function mg(mgm, w){
+  let num = 0, den = 0;
+  for (const k in w){ num += mgm[k] * w[k]; den += w[k]; }
+  return num / den;
+}
+
+/* ---------- Interface ---------- */
+const $ = id => document.getElementById(id);
+const serieSel = $("serie"), notesBody = $("notesBody");
+
+serieSel.addEventListener("change", () => {
+  const serie = serieSel.value;
+  const subs = SERIE_SUBJECTS[serie];
+  const nb = FILIERES.filter(f => f.series[serie]).length;
+  $("serieHint").textContent = nb + " filière(s) ouvertes à ta série au concours 2026.";
+  notesBody.innerHTML = subs.map(s => `
+    <tr>
+      <td>${SUBJECTS[s]}</td>
+      ${["n2","n1","tle","bac"].map(p => `
+        <td><input type="number" min="0" max="20" step="0.01" required
+             inputmode="decimal" data-sub="${s}" data-period="${p}"></td>`).join("")}
+    </tr>`).join("");
+  $("notesCard").style.display = "block";
+  $("submitCard").style.display = "block";
+  $("results").style.display = "none";
+});
+
+function readNotes(){
+  const inputs = notesBody.querySelectorAll("input");
+  const data = {};
+  let valid = true;
+  inputs.forEach(inp => {
+    const v = parseFloat(inp.value.replace(",", "."));
+    const ok = !isNaN(v) && v >= 0 && v <= 20;
+    inp.classList.toggle("err", !ok);
+    if (!ok){ valid = false; return; }
+    (data[inp.dataset.sub] ||= {})[inp.dataset.period] = v;
+  });
+  return valid ? data : null;
+}
+
+$("mainForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const msg = $("msg");
+  msg.textContent = ""; msg.className = "msg";
+
+  const notes = readNotes();
+  if (!notes){
+    msg.textContent = "Vérifie tes notes : elles doivent être comprises entre 0 et 20.";
+    msg.className = "msg bad";
+    return;
+  }
+
+  // 1. MC puis MGM par matière
+  const mgm = {};
+  for (const s in notes){
+    const n = notes[s];
+    const mc = (2*n.n2 + 3*n.n1 + 5*n.tle) / 10;
+    mgm[s] = (mc + 3*n.bac) / 4;
+  }
+
+  // 2. Moyennes de dossier des filières ouvertes à la série
+  const serie = serieSel.value;
+  const results = FILIERES
+    .filter(f => f.series[serie])
+    .map(f => {
+      const [w, approx] = f.series[serie];
+      return {name:f.name, ecole:f.ecole, cycle:f.cycle, voies:f.voies,
+              approx:!!approx, score:mg(mgm, w)};
+    })
+    .sort((a,b) => b.score - a.score);
+
+  renderResults(mgm, results);
+
+  // 3. Envoi vers le Drive
+  sendToSheet({
+    nom: $("nom").value.trim(),
+    prenom: $("prenom").value.trim(),
+    ecole: $("ecole").value.trim(),
+    serie,
+    notes,
+    mgm,
+    resultats: results.map(r => ({filiere:r.name, cycle:r.cycle, moyenne:+r.score.toFixed(2)}))
+  });
+});
+
+function renderResults(mgm, results){
+  $("mgmSummary").innerHTML =
+    Object.keys(mgm).map(s =>
+      `<div class="mgm-line">${SUBJECTS[s]} : <b>${mgm[s].toFixed(2)} / 20</b></div>`).join("");
+
+  const bestScore = results.length ? results[0].score : 0;
+  const groups = [
+    {key:"court", label:"Cycles courts — D.T.S. (grade Licence)"},
+    {key:"long",  label:"Classes préparatoires (EPGE)"}
+  ];
+  let anyApprox = false;
+  $("resList").innerHTML = groups.map(g => {
+    const items = results.filter(r => r.cycle === g.key);
+    if (!items.length) return "";
+    return `<div class="res-group"><h3>${g.label}</h3>` + items.map(r => {
+      if (r.approx) anyApprox = true;
+      const isBest = r.score === bestScore;
+      return `
+      <div class="res-item ${isBest ? "best" : ""}">
+        <div>
+          ${isBest ? '<div class="badge-best">Meilleure chance</div>' : ""}
+          <div class="name">${r.name}${r.approx ? ' <span class="approx" title="Coefficients estimés, à confirmer">*</span>' : ""}</div>
+          <div class="sub">${r.ecole} · Voies : ${r.voies}</div>
+        </div>
+        <div class="score">${r.score.toFixed(2)}</div>
+      </div>`;
+    }).join("") + `</div>`;
+  }).join("");
+  $("approxWarn").style.display = anyApprox ? "block" : "none";
+  $("results").style.display = "block";
+  $("results").scrollIntoView({behavior:"smooth"});
+}
+
+async function sendToSheet(payload){
+  const msg = $("msg");
+  if (SCRIPT_URL.startsWith("COLLE_ICI")){
+    msg.textContent = "⚠ Enregistrement non configuré (URL Apps Script manquante).";
+    msg.className = "msg bad";
+    return;
+  }
+  try{
+    await fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {"Content-Type": "text/plain;charset=utf-8"},
+      body: JSON.stringify(payload)
+    });
+    msg.textContent = "✓ Tes informations ont bien été enregistrées. Bonne chance pour le concours !";
+    msg.className = "msg ok";
+  }catch(err){
+    msg.textContent = "Le calcul a réussi mais l'enregistrement a échoué (connexion ?).";
+    msg.className = "msg bad";
+  }
+}
+</script>
+</body>
+</html>
